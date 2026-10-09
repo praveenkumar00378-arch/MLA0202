@@ -1,0 +1,85 @@
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Training data: Sky, AirTemp, Humidity, Wind, Water, Forecast, EnjoySport
+data = [
+    ["Sunny", "Warm", "Normal", "Strong", "Warm", "Same", "Yes"],
+    ["Sunny", "Warm", "High",   "Strong", "Warm", "Same", "Yes"],
+    ["Rainy", "Cold", "High",   "Strong", "Warm", "Change", "No"],
+    ["Sunny", "Warm", "High",   "Strong", "Cool", "Change", "Yes"]
+]
+
+attributes = [
+    "Sky", "AirTemp", "Humidity",
+    "Wind", "Water", "Forecast"
+]
+
+def find_s(data):
+    hypothesis = None
+    history = []
+
+    for i, example in enumerate(data):
+        x = example[:-1]
+        target = example[-1]
+
+        # Consider only positive examples
+        if target == "Yes":
+            if hypothesis is None:
+                hypothesis = x.copy()
+            else:
+                for j in range(len(hypothesis)):
+                    if hypothesis[j] != x[j]:
+                        hypothesis[j] = "?"
+
+        # Save hypothesis after each example
+        current = hypothesis.copy() if hypothesis else [
+            "Ø" for _ in attributes
+        ]
+        history.append(current)
+
+        print(f"Example {i + 1}: {example}")
+        print("Hypothesis:", current)
+
+    return hypothesis, history
+
+# Run FIND-S
+final_hypothesis, history = find_s(data)
+
+print("\nFinal Most Specific Hypothesis:")
+print(final_hypothesis)
+
+# Visualize hypothesis evolution
+values = ["Ø", "Sunny", "Rainy", "Warm", "Cold",
+          "Normal", "High", "Strong", "Weak",
+          "Cool", "Same", "Change", "?"]
+
+value_map = {v: i for i, v in enumerate(values)}
+
+matrix = np.array([
+    [value_map.get(v, 0) for v in row]
+    for row in history
+])
+
+fig, ax = plt.subplots(figsize=(10, 4.5))
+
+im = ax.imshow(matrix, cmap="viridis", aspect="auto")
+
+ax.set_xticks(range(len(attributes)))
+ax.set_xticklabels(attributes)
+ax.set_yticks(range(len(data)))
+ax.set_yticklabels([f"Example {i+1}" for i in range(len(data))])
+
+for i in range(len(history)):
+    for j in range(len(attributes)):
+        ax.text(
+            j, i, history[i][j],
+            ha="center", va="center", color="white",
+            fontsize=9
+        )
+
+ax.set_title("FIND-S Algorithm: Hypothesis Evolution")
+ax.set_xlabel("Attributes")
+ax.set_ylabel("Training Samples")
+plt.tight_layout()
+plt.show()
